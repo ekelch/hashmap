@@ -1,15 +1,13 @@
-#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-const int MAP_MAX = 100;
+const int MAP_MAX = 10;
 const int MAP_KEY_MAX = 20;
-const int MAP_VALUE_MAX = 255;
 
 typedef struct Ek_LinkedList {
     char key[MAP_KEY_MAX];
-    char value[MAP_VALUE_MAX];
+    void* value;
     struct Ek_LinkedList* next;
 } Ek_LinkedList;
 
@@ -42,27 +40,29 @@ unsigned long getIndex(const Ek_Map map, char* key) {
 char* map_get(Ek_Map* map, char* key) {
     const unsigned long index = getIndex(*map, key);
     Ek_LinkedList* node = map->arr[index];
-    while (strcmp(node->key, key) != 0) {
+    if (map->arr[index] == NULL) {
+        return NULL;
+    }
+    while (node->next && strcmp(node->key, key) != 0) {
         node = node->next;
     }
     return node->value;
 }
 
-void map_put(Ek_Map* map, char* key, const char* value) {
-    const unsigned long index = getIndex(*map, key);
-    Ek_LinkedList* node = map->arr[index];
+void map_put(Ek_Map* map, char* key, void* value) {
+    const unsigned long mapIndex = getIndex(*map, key);
+    Ek_LinkedList* node = map->arr[mapIndex];
     if (node == NULL) {
         node = malloc(sizeof(Ek_LinkedList));
+        strcpy(node->key, key);
+        node->value = value;
     } else {
-        while (node->next != NULL) {
-            node = map->arr[index]->next;
-        }
-        node->next = malloc(sizeof(Ek_LinkedList));
+        Ek_LinkedList* next = malloc(sizeof(Ek_LinkedList));
+        strcpy(next->key, key);
+        next->value = value;
+        node->next = next;
     }
-
-    strcpy(node->key, key);
-    strcpy(node->value, value);
-    map->arr[index] = node;
+    map->arr[mapIndex] = node;
 }
 
 void map_destroy(Ek_Map* map) {
@@ -76,13 +76,21 @@ void map_destroy(Ek_Map* map) {
 int main(void) {
     Ek_Map map = {.size = MAP_MAX};
 
-    char key[MAP_KEY_MAX];
-    char value[MAP_VALUE_MAX];
-    for (int i = 0; i < 40; i++) {
-        sprintf(key, "key %d", i);
-        sprintf(value, "test %d", i);
-        map_put(&map, key, value);
-    }
+    map_put(&map, "key a", "value a");
+    map_put(&map, "key b", "value b");
+    map_put(&map, "key c", "value c");
+    map_put(&map, "key 1", "value 1");
+    map_put(&map, "key 2", "value 2");
+    map_put(&map, "key 3", "value 3");
+    map_put(&map, "key 4", "value 4");
+
+    printf("%s\n", map_get(&map, "key a"));
+    printf("%s\n", map_get(&map, "key b"));
+    printf("%s\n", map_get(&map, "key c"));
+    printf("%s\n", map_get(&map, "key 1"));
+    printf("%s\n", map_get(&map, "key 2"));
+    printf("%s\n", map_get(&map, "key 3"));
+    printf("%s\n", map_get(&map, "key 4"));
 
     map_destroy(&map);
     return 0;
