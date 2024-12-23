@@ -37,7 +37,7 @@ unsigned long getIndex(const Ek_Map map, char* key) {
     return hash((unsigned char*)key) % (unsigned long) map.size;
 }
 
-char* map_get(Ek_Map* map, char* key) {
+void* map_get(Ek_Map* map, char* key) {
     const unsigned long index = getIndex(*map, key);
     Ek_LinkedList* node = map->arr[index];
     if (map->arr[index] == NULL) {
@@ -76,21 +76,17 @@ void map_destroy(Ek_Map* map) {
 int main(void) {
     Ek_Map map = {.size = MAP_MAX};
 
-    map_put(&map, "key a", "value a");
-    map_put(&map, "key b", "value b");
-    map_put(&map, "key c", "value c");
-    map_put(&map, "key 1", "value 1");
-    map_put(&map, "key 2", "value 2");
-    map_put(&map, "key 3", "value 3");
-    map_put(&map, "key 4", "value 4");
+    typedef struct {
+        int x;
+        int y;
+    } Point;
 
-    printf("%s\n", map_get(&map, "key a"));
-    printf("%s\n", map_get(&map, "key b"));
-    printf("%s\n", map_get(&map, "key c"));
-    printf("%s\n", map_get(&map, "key 1"));
-    printf("%s\n", map_get(&map, "key 2"));
-    printf("%s\n", map_get(&map, "key 3"));
-    printf("%s\n", map_get(&map, "key 4"));
+    Point p2 = {3,4};
+
+    map_put(&map, "p2", &p2);
+    Point* np = map_get(&map, "p2");
+    Point npc = *np;
+    printf("%d %d\n", npc.x, npc.y);
 
     map_destroy(&map);
     return 0;
