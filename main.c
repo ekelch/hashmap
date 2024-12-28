@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-const int MAP_MAX = 10;
+const int MAP_DEFAULT_SIZE = 50;
 const int MAP_KEY_MAX = 20;
 
 typedef struct Ek_LinkedList {
@@ -13,7 +13,7 @@ typedef struct Ek_LinkedList {
 
 typedef struct {
     int size;
-    Ek_LinkedList *arr[MAP_MAX];
+    Ek_LinkedList *map[MAP_DEFAULT_SIZE];
 } Ek_Map;
 
 typedef struct {
@@ -80,8 +80,8 @@ unsigned long getIndex(const Ek_Map map, char *key) {
 
 void *map_get(Ek_Map *map, char *key) {
     const unsigned long index = getIndex(*map, key);
-    Ek_LinkedList *node = map->arr[index];
-    if (map->arr[index] == NULL) {
+    Ek_LinkedList *node = map->map[index];
+    if (map->map[index] == NULL) {
         return NULL;
     }
     while (node->next && strcmp(node->key, key) != 0) {
@@ -92,12 +92,12 @@ void *map_get(Ek_Map *map, char *key) {
 
 void map_put(Ek_Map *map, char *key, void *value) {
     const unsigned long mapIndex = getIndex(*map, key);
-    Ek_LinkedList *node = map->arr[mapIndex];
+    Ek_LinkedList *node = map->map[mapIndex];
     if (node == NULL) {
         node = malloc(sizeof(Ek_LinkedList));
         strcpy(node->key, key);
         node->value = value;
-        map->arr[mapIndex] = node;
+        map->map[mapIndex] = node;
     } else {
         Ek_LinkedList *next = malloc(sizeof(Ek_LinkedList));
         strcpy(next->key, key);
@@ -106,43 +106,62 @@ void map_put(Ek_Map *map, char *key, void *value) {
     }
 }
 
+char** map_keys(const Ek_Map *map) {
+    char** keys = malloc(sizeof(char*) * map->size);
+    int keypos = 0;
+    for (int i = 0; i < map->size; i++) {
+        if (map->map[i]->key != NULL) {
+            keys[keypos++] = map->map[i]->key;
+        }
+    }
+    return keys;
+}
+
 void map_destroy(Ek_Map *map) {
     for (int i = 0; i < map->size; i++) {
-        if (map->arr[i] != NULL) {
-            destroyLinkedList(map->arr[i]);
+        if (map->map[i] != NULL) {
+            destroyLinkedList(map->map[i]);
         }
     }
 }
 
 int main(void) {
-    // Ek_Map map = {.size = MAP_MAX};
-    // typedef struct {
-    //     int x;
-    //     int y;
-    // } Point;
-    // Point p2 = {3, 4};
-    // map_put(&map, "p2", &p2);
-    // Point *np = map_get(&map, "p2");
-    // Point npc = *np;
-    // printf("%d %d\n", npc.x, npc.y);
-    // map_destroy(&map);
+    Ek_Map map = {.size = MAP_DEFAULT_SIZE};
+    typedef struct {
+        int x;
+        int y;
+    } Point;
+    Point p2 = {3, 4};
+    map_put(&map, "p2", &p2);
+    map_put(&map, "p1", "hello world");
+    map_put(&map, "p3", "hello world");
+    map_put(&map, "p4", "hello world");
+    Point *np = map_get(&map, "p2");
+    Point npc = *np;
+    char** keys = map_keys(&map);
 
-    Ek_List* list = list_new(5);
-    list_add(list, "hello world");
-    list_add(list, "hello again 1");
-    list_add(list, "hello again 2");
-    list_add(list, "hello again 3");
-    list_add(list, "hello again 4");
-    list_add(list, "hello again 4");
-    list_add(list, "hello again 5");
+    printf("%d %d\n", npc.x, npc.y);
 
-    list_deleteIndex(list, 0);
-    printf("%d\n", list->capacity);
 
-    for (int i = 0; i < list->size; i++) {
-        printf("%d: %s\n", i, list->arr[i]);
-    }
-    printf("%d\n", list->capacity);
-    free(list);
+
+    map_destroy(&map);
+
+    // Ek_List* list = list_new(5);
+    // list_add(list, "hello world");
+    // list_add(list, "hello again 1");
+    // list_add(list, "hello again 2");
+    // list_add(list, "hello again 3");
+    // list_add(list, "hello again 4");
+    // list_add(list, "hello again 4");
+    // list_add(list, "hello again 5");
+    //
+    // list_deleteIndex(list, 0);
+    // printf("%d\n", list->capacity);
+    //
+    // for (int i = 0; i < list->size; i++) {
+    //     printf("%d: %s\n", i, list->arr[i]);
+    // }
+    // printf("%d\n", list->capacity);
+    // free(list);
     return 0;
 }
